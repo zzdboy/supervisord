@@ -46,7 +46,7 @@ func initSignals(s *Supervisor) {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		sig := <-sigs
-		log.WithFields(log.Fields{"signal": sig}).Info("receive a signal to stop all process & exit")
+		log.WithFields(log.Fields{"signal": sig}).Info("接收到停止所有进程并退出的信号")
 		s.procMgr.StopAllProcesses()
 		os.Exit(-1)
 	}()
@@ -63,7 +63,7 @@ func loadEnvFile() {
 	// try to open the environment file
 	f, err := os.Open(options.EnvFile)
 	if err != nil {
-		log.WithFields(log.Fields{"file": options.EnvFile}).Error("Fail to open environment file")
+		log.WithFields(log.Fields{"file": options.EnvFile}).Error("打开配置文件失败")
 		return
 	}
 	defer f.Close()

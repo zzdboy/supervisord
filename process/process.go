@@ -140,12 +140,13 @@ func (p *Process) addToCron() {
 
 // Start process
 // Args:
-//  wait - true, wait the program started or failed
+//
+//	wait - true, wait the program started or failed
 func (p *Process) Start(wait bool) {
-	log.WithFields(log.Fields{"program": p.GetName()}).Info("try to start program")
+	log.WithFields(log.Fields{"program": p.GetName()}).Info("尝试启动程序")
 	p.lock.Lock()
 	if p.inStart {
-		log.WithFields(log.Fields{"program": p.GetName()}).Info("Don't start program again, program is already started")
+		log.WithFields(log.Fields{"program": p.GetName()}).Info("不要再启动程序，程序已经启动")
 		p.lock.Unlock()
 		return
 	}
@@ -175,11 +176,11 @@ func (p *Process) Start(wait bool) {
 				time.Sleep(5 * time.Second)
 			}
 			if p.stopByUser {
-				log.WithFields(log.Fields{"program": p.GetName()}).Info("Stopped by user, don't start it again")
+				log.WithFields(log.Fields{"program": p.GetName()}).Info("已被用户停止，请勿再次启动")
 				break
 			}
 			if !p.isAutoRestart() {
-				log.WithFields(log.Fields{"program": p.GetName()}).Info("Don't start the stopped program because its autorestart flag is false")
+				log.WithFields(log.Fields{"program": p.GetName()}).Info("不要启动已停止的程序，因为它的自动重启标志为假")
 				break
 			}
 		}
@@ -392,12 +393,16 @@ func (p *Process) getExitCodes() []int {
 }
 
 // check if the process is running or not
-//
 func (p *Process) isRunning() bool {
 	if p.cmd != nil && p.cmd.Process != nil {
 		if runtime.GOOS == "windows" {
 			proc, err := os.FindProcess(p.cmd.Process.Pid)
-			return proc != nil && err == nil
+			if err != nil {
+				// 如果找不到进程，返回 false
+				return false
+			}
+			// 检查进程是否仍在运行
+			return proc != nil
 		}
 		return p.cmd.Process.Signal(syscall.Signal(0)) == nil
 	}
@@ -506,7 +511,6 @@ func (p *Process) failToStartProgram(reason string, finishCb func()) {
 }
 
 // monitor if the program is in running before endTime
-//
 func (p *Process) monitorProgramIsRunning(endTime time.Time, monitorExited *int32, programExited *int32) {
 	// if time is not expired
 	for time.Now().Before(endTime) && atomic.LoadInt32(programExited) == 0 {
@@ -518,7 +522,7 @@ func (p *Process) monitorProgramIsRunning(endTime time.Time, monitorExited *int3
 	defer p.lock.Unlock()
 	// if the program does not exit
 	if atomic.LoadInt32(programExited) == 0 && p.state == Starting {
-		log.WithFields(log.Fields{"program": p.GetName()}).Info("success to start program")
+		log.WithFields(log.Fields{"program": p.GetName()}).Info("成功启动项目")
 		p.changeStateTo(Running)
 	}
 }
@@ -529,7 +533,7 @@ func (p *Process) run(finishCb func()) {
 
 	// check if the program is in running state
 	if p.isRunning() {
-		log.WithFields(log.Fields{"program": p.GetName()}).Info("Don't start program because it is running")
+		log.WithFields(log.Fields{"program": p.GetName()}).Info("不要启动正在运行的程序")
 		finishCb()
 		return
 
@@ -608,7 +612,7 @@ func (p *Process) run(finishCb func()) {
 		// Set startsec to 0 to indicate that the program needn't stay
 		// running for any particular amount of time.
 		if startSecs <= 0 {
-			log.WithFields(log.Fields{"program": p.GetName()}).Info("success to start program")
+			log.WithFields(log.Fields{"program": p.GetName()}).Info("成功启动项目")
 			p.changeStateTo(Running)
 			go finishCbWrapper()
 		} else {
@@ -617,7 +621,7 @@ func (p *Process) run(finishCb func()) {
 				finishCbWrapper()
 			}()
 		}
-		log.WithFields(log.Fields{"program": p.GetName()}).Debug("wait program exit")
+		log.WithFields(log.Fields{"program": p.GetName()}).Debug("等待程序退出")
 		p.lock.Unlock()
 
 		procExitC := make(chan struct{})
@@ -700,9 +704,9 @@ func (p *Process) changeStateTo(procState State) {
 // Signal sends signal to the process
 //
 // Args:
-//   sig - the signal to the process
-//   sigChildren - if true, sends the same signal to the process and its children
 //
+//	sig - the signal to the process
+//	sigChildren - if true, sends the same signal to the process and its children
 func (p *Process) Signal(sig os.Signal, sigChildren bool) error {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
@@ -727,9 +731,9 @@ func (p *Process) sendSignals(sigs []string, sigChildren bool) {
 // send signal to the process
 //
 // Args:
-//    sig - the signal to be sent
-//    sigChildren - if true, the signal also will be sent to children processes too
 //
+//	sig - the signal to be sent
+//	sigChildren - if true, the signal also will be sent to children processes too
 func (p *Process) sendSignal(sig os.Signal, sigChildren bool) error {
 	if p.cmd != nil && p.cmd.Process != nil {
 		log.WithFields(log.Fields{"program": p.GetName(), "signal": sig}).Info("Send signal to program")
@@ -940,10 +944,10 @@ func (p *Process) Stop(wait bool) {
 	isRunning := p.isRunning()
 	p.lock.Unlock()
 	if !isRunning {
-		log.WithFields(log.Fields{"program": p.GetName()}).Info("program is not running")
+		log.WithFields(log.Fields{"program": p.GetName()}).Info("程序未运行")
 		return
 	}
-	log.WithFields(log.Fields{"program": p.GetName()}).Info("stop the program")
+	log.WithFields(log.Fields{"program": p.GetName()}).Info("成功停止程序")
 	sigs := strings.Fields(p.config.GetString("stopsignal", "SIGTERM"))
 	waitsecs := time.Duration(p.config.GetInt("stopwaitsecs", 10)) * time.Second
 	killwaitsecs := time.Duration(p.config.GetInt("killwaitsecs", 2)) * time.Second
@@ -961,7 +965,7 @@ func (p *Process) Stop(wait bool) {
 			if err != nil {
 				continue
 			}
-			log.WithFields(log.Fields{"program": p.GetName(), "signal": sigs[i]}).Info("send stop signal to program")
+			log.WithFields(log.Fields{"program": p.GetName(), "signal": sigs[i]}).Info("向程序发送停止信号")
 			p.Signal(sig, stopasgroup)
 			endTime := time.Now().Add(waitsecs)
 			// wait at most "stopwaitsecs" seconds for one signal
@@ -975,7 +979,7 @@ func (p *Process) Stop(wait bool) {
 			}
 		}
 		if atomic.LoadInt32(&stopped) == 0 {
-			log.WithFields(log.Fields{"program": p.GetName()}).Info("force to kill the program")
+			log.WithFields(log.Fields{"program": p.GetName()}).Info("强制终止程序")
 			p.Signal(syscall.SIGKILL, killasgroup)
 			killEndTime := time.Now().Add(killwaitsecs)
 			for killEndTime.After(time.Now()) {

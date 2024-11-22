@@ -17,7 +17,7 @@ func Daemonize(logfile string, proc func()) {
 		context := daemon.Context{}
 		child, err = context.Reborn()
 		if err != nil {
-			log.WithFields(log.Fields{"err": err}).Fatal("Unable to run")
+			log.WithFields(log.Fields{"err": err}).Fatal("无法运行")
 		}
 	}
 	if child != nil {

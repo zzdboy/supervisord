@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -36,21 +35,21 @@ type httpBasicAuth struct {
 // create a new HttpBasicAuth object with username, password and the http request handler
 func newHTTPBasicAuth(user string, password string, handler http.Handler) *httpBasicAuth {
 	if user != "" && password != "" {
-		log.Debug("require authentication")
+		log.Debug("需要身份验证")
 	}
 	return &httpBasicAuth{user: user, password: password, handler: handler}
 }
 
 func (h *httpBasicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.user == "" || h.password == "" {
-		log.Debug("no auth required")
+		log.Debug("无需授权")
 		h.handler.ServeHTTP(w, r)
 		return
 	}
 	username, password, ok := r.BasicAuth()
 	if ok && username == h.user {
 		if strings.HasPrefix(h.password, "{SHA}") {
-			log.Debug("auth with SHA")
+			log.Debug("SHA认证")
 			hash := sha1.New() //nolint:gosec
 			io.WriteString(hash, password)
 			if hex.EncodeToString(hash.Sum(nil)) == h.password[5:] {
@@ -58,7 +57,7 @@ func (h *httpBasicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		} else if password == h.password {
-			log.Debug("Auth with normal password")
+			log.Debug("使用普通密码验证")
 			h.handler.ServeHTTP(w, r)
 			return
 		}
@@ -105,7 +104,7 @@ func readFile(path string) ([]byte, error) {
 		return nil, err
 	}
 	defer f.Close()
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +194,7 @@ func (p *XMLRPC) startHTTPServer(user string, password string, protocol string, 
 
 	listener, err := net.Listen(protocol, listenAddr)
 	if err == nil {
-		log.WithFields(log.Fields{"addr": listenAddr, "protocol": protocol}).Info("success to listen on address")
+		log.WithFields(log.Fields{"addr": listenAddr, "protocol": protocol}).Info("成功监听地址:")
 		p.listeners[protocol] = listener
 		startedCb()
 		http.Serve(listener, mux)

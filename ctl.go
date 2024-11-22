@@ -455,13 +455,12 @@ func (lc *LogtailCommand) tailLog(program string, dev string) error {
 			os.Stderr.Write(buf[0:n])
 		}
 	}
-	return nil
 }
 
 // Execute check if the number of arguments is ok
 func (wc *CmdCheckWrapperCommand) Execute(args []string) error {
 	if len(args) < wc.leastNumArgs {
-		err := fmt.Errorf("Invalid arguments.\nUsage: supervisord ctl %v", wc.usage)
+		err := fmt.Errorf("invalid arguments.\nUsage: supervisord ctl %v", wc.usage)
 		fmt.Printf("%v\n", err)
 		return err
 	}

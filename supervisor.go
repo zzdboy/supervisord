@@ -138,7 +138,7 @@ func (s *Supervisor) GetState(r *http.Request, args *struct{}, reply *struct{ St
 	// -1           SHUTDOWN
 	log.Debug("Get state")
 	reply.StateInfo.Statecode = 1
-	reply.StateInfo.Statename = "RUNNING"
+	reply.StateInfo.Statename = "Running"
 	return nil
 }
 
@@ -277,7 +277,7 @@ func (s *Supervisor) StartAllProcesses(r *http.Request, args *struct {
 
 // StartProcessGroup start all the processes in one group
 func (s *Supervisor) StartProcessGroup(r *http.Request, args *StartProcessArgs, reply *struct{ AllProcessInfo []types.ProcessInfo }) error {
-	log.WithFields(log.Fields{"group": args.Name}).Info("start process group")
+	log.WithFields(log.Fields{"group": args.Name}).Info("启动进程")
 	finishedProcCh := make(chan *process.Process)
 
 	n := s.procMgr.AsyncForEachProcess(func(proc *process.Process) {
@@ -298,7 +298,7 @@ func (s *Supervisor) StartProcessGroup(r *http.Request, args *StartProcessArgs, 
 
 // StopProcess stop given program
 func (s *Supervisor) StopProcess(r *http.Request, args *StartProcessArgs, reply *struct{ Success bool }) error {
-	log.WithFields(log.Fields{"program": args.Name}).Info("stop process")
+	log.WithFields(log.Fields{"program": args.Name}).Info("停止进程")
 	procs := s.procMgr.FindMatch(args.Name)
 	if len(procs) <= 0 {
 		return fmt.Errorf("fail to find process %s", args.Name)
@@ -312,7 +312,7 @@ func (s *Supervisor) StopProcess(r *http.Request, args *StartProcessArgs, reply 
 
 // StopProcessGroup stop all processes in one group
 func (s *Supervisor) StopProcessGroup(r *http.Request, args *StartProcessArgs, reply *struct{ AllProcessInfo []types.ProcessInfo }) error {
-	log.WithFields(log.Fields{"group": args.Name}).Info("stop process group")
+	log.WithFields(log.Fields{"group": args.Name}).Info("停止进程组")
 	finishedProcCh := make(chan *process.Process)
 	n := s.procMgr.AsyncForEachProcess(func(proc *process.Process) {
 		if proc.GetGroup() == args.Name {
@@ -359,7 +359,7 @@ func (s *Supervisor) SignalProcess(r *http.Request, args *types.ProcessSignal, r
 	procs := s.procMgr.FindMatch(args.Name)
 	if len(procs) <= 0 {
 		reply.Success = false
-		return fmt.Errorf("No process named %s", args.Name)
+		return fmt.Errorf("no process named %s", args.Name)
 	}
 	sig, err := signals.ToSignal(args.Signal)
 	if err == nil {
@@ -408,12 +408,12 @@ func (s *Supervisor) SignalAllProcesses(r *http.Request, args *types.ProcessSign
 func (s *Supervisor) SendProcessStdin(r *http.Request, args *ProcessStdin, reply *struct{ Success bool }) error {
 	proc := s.procMgr.Find(args.Name)
 	if proc == nil {
-		log.WithFields(log.Fields{"program": args.Name}).Error("program does not exist")
-		return fmt.Errorf("NOT_RUNNING")
+		log.WithFields(log.Fields{"program": args.Name}).Error("程序不存在")
+		return fmt.Errorf("未运行")
 	}
 	if proc.GetState() != process.Running {
-		log.WithFields(log.Fields{"program": args.Name}).Error("program does not run")
-		return fmt.Errorf("NOT_RUNNING")
+		log.WithFields(log.Fields{"program": args.Name}).Error("程序未运行")
+		return fmt.Errorf("未运行")
 	}
 	err := proc.SendProcessStdin(args.Chars)
 	if err == nil {
@@ -643,7 +643,7 @@ func (s *Supervisor) RemoveProcessGroup(r *http.Request, args *struct{ Name stri
 func (s *Supervisor) ReadProcessStdoutLog(r *http.Request, args *ProcessLogReadInfo, reply *struct{ LogData string }) error {
 	proc := s.procMgr.Find(args.Name)
 	if proc == nil {
-		return fmt.Errorf("No such process %s", args.Name)
+		return fmt.Errorf("no such process %s", args.Name)
 	}
 	var err error
 	reply.LogData, err = proc.StdoutLog.ReadLog(int64(args.Offset), int64(args.Length))
@@ -654,7 +654,7 @@ func (s *Supervisor) ReadProcessStdoutLog(r *http.Request, args *ProcessLogReadI
 func (s *Supervisor) ReadProcessStderrLog(r *http.Request, args *ProcessLogReadInfo, reply *struct{ LogData string }) error {
 	proc := s.procMgr.Find(args.Name)
 	if proc == nil {
-		return fmt.Errorf("No such process %s", args.Name)
+		return fmt.Errorf("no such process %s", args.Name)
 	}
 	var err error
 	reply.LogData, err = proc.StderrLog.ReadLog(int64(args.Offset), int64(args.Length))
@@ -665,7 +665,7 @@ func (s *Supervisor) ReadProcessStderrLog(r *http.Request, args *ProcessLogReadI
 func (s *Supervisor) TailProcessStdoutLog(r *http.Request, args *ProcessLogReadInfo, reply *ProcessTailLog) error {
 	proc := s.procMgr.Find(args.Name)
 	if proc == nil {
-		return fmt.Errorf("No such process %s", args.Name)
+		return fmt.Errorf("no such process %s", args.Name)
 	}
 	var err error
 	reply.LogData, reply.Offset, reply.Overflow, err = proc.StdoutLog.ReadTailLog(int64(args.Offset), int64(args.Length))
@@ -676,7 +676,7 @@ func (s *Supervisor) TailProcessStdoutLog(r *http.Request, args *ProcessLogReadI
 func (s *Supervisor) TailProcessStderrLog(r *http.Request, args *ProcessLogReadInfo, reply *ProcessTailLog) error {
 	proc := s.procMgr.Find(args.Name)
 	if proc == nil {
-		return fmt.Errorf("No such process %s", args.Name)
+		return fmt.Errorf("no such process %s", args.Name)
 	}
 	var err error
 	reply.LogData, reply.Offset, reply.Overflow, err = proc.StderrLog.ReadTailLog(int64(args.Offset), int64(args.Length))
@@ -687,7 +687,7 @@ func (s *Supervisor) TailProcessStderrLog(r *http.Request, args *ProcessLogReadI
 func (s *Supervisor) ClearProcessLogs(r *http.Request, args *struct{ Name string }, reply *struct{ Success bool }) error {
 	proc := s.procMgr.Find(args.Name)
 	if proc == nil {
-		return fmt.Errorf("No such process %s", args.Name)
+		return fmt.Errorf("no such process %s", args.Name)
 	}
 	err1 := proc.StdoutLog.ClearAllLogFile()
 	err2 := proc.StderrLog.ClearAllLogFile()

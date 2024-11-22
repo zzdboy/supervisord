@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -73,7 +74,7 @@ func (sr *SupervisorRestful) StartPrograms(w http.ResponseWriter, req *http.Requ
 	var b []byte
 	var err error
 
-	if b, err = ioutil.ReadAll(req.Body); err != nil {
+	if b, err = io.ReadAll(req.Body); err != nil {
 		w.WriteHeader(400)
 		w.Write([]byte("not a valid request"))
 		return
@@ -128,7 +129,7 @@ func (sr *SupervisorRestful) StopPrograms(w http.ResponseWriter, req *http.Reque
 		for _, program := range programs {
 			sr._stopProgram(program)
 		}
-		w.Write([]byte("Success to stop the programs"))
+		w.Write([]byte("成功停止程序"))
 	}
 
 }

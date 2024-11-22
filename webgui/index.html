@@ -56,12 +56,12 @@
             url: "/program/start/" + name,
             success: function( data, status, jqXHR  ) {
                 if( data['success'] ) {
-                    changeProgramState( name, "RUNNING" );
+                    changeProgramState( name, "Running" );
                     refreshDisplay();
                 } else {
-                    confirm_dialog( { 'title': "Information",
-                        'message': "Fail to start program, please check the log of supervisord to find reason",
-                        'cancel-text': "Cancel",
+                    confirm_dialog( { 'title': "消息",
+                        'message': "启动程序失败，请查看管理员日志查找原因",
+                        'cancel-text': "取消",
                         'cancel-hide': true,
                         'confirm-text': "Ok",
                         'confirm-onclick': function() {}
@@ -70,8 +70,8 @@
                 }
             },
             error: function( jqXHR, status, errorThrown ) {
-                confirm_dialog( { 'title': "Information",
-                    'message': "Fail to start program, please check if supervisord is started or not",
+                confirm_dialog( { 'title': "消息",
+                    'message': "启动程序失败，请检查系统是否启动",
                     'cancel-text': "Cancel",
                     'cancel-hide': true,
                     'confirm-text': "Ok",
@@ -84,13 +84,13 @@
 
     function stopProgram( programName ) {
         return new Promise((resolve, reject) =>{
-            confirm_dialog( { 'title': "Stop confirmation",
-                'message': "Do you really want to stop program?",
-                'cancel-text': "Cancel",
-                'confirm-text': "Stop",
+            confirm_dialog( { 'title': "停止确认",
+                'message': "你真的想停止程序吗？",
+                'cancel-text': "取消",
+                'confirm-text': "停止",
                 'confirm-onclick': async function() {
                     await doStopProgram( programName );
-                    resolve("success");
+                    resolve("成功");
                 }
             } );
         })
@@ -111,30 +111,30 @@
                     url: "/program/stop/" + name,
                     success: function( data, status, jqXHR  ) {
                         if( data['success'] ) {
-                            changeProgramState( name, 'STOPPED' );
+                            changeProgramState( name, '停止' );
                             refreshDisplay();
                         } else {
-                            confirm_dialog( { 'title': "Information",
-                                'message': "Fail to stop program, please check the log of supervisord",
-                                'cancel-text': "Cancel",
+                            confirm_dialog( { 'title': "消息",
+                                'message': "停止程序失败，请查看管理员日志",
+                                'cancel-text': "取消",
                                 'cancel-hide': true,
                                 'confirm-text': "Ok",
                                 'confirm-onclick': function() {
                                 }
                             } );
                         }
-                        resolve("success")
+                        resolve("成功")
                     },
                     error: function( jqXHR, status, errorThrown ) {
-                        confirm_dialog( { 'title': "Information",
-                            'message': "Fail to stop program, please check if supervisord is running",
-                            'cancel-text': "Cancel",
+                        confirm_dialog( { 'title': "消息",
+                            'message': "停止程序失败，请检查系统是否正在运行",
+                            'cancel-text': "取消",
                             'cancel-hide': true,
                             'confirm-text': "Ok",
                             'confirm-onclick': function() {
                             }
                         } );
-                        reject("err")
+                        reject("错误")
 
                     }
                 });
@@ -148,14 +148,14 @@
             var action = "";
             var color = "";
             if( statename.toLowerCase().indexOf("running") >= 0 || statename.toLowerCase().indexOf( "starting") >= 0 ) {
-                action = '<button type="button" disabled class="btn btn-primary mr-1" onclick="startProgram(\'' + programs[i]['name'] + '\');">Start</button>';
-                action = action + '<button type="button" class="btn btn-primary mr-1" onclick="stopProgram(\'' + programs[i]['name'] + '\');">Stop</button>';
-                action = action + '<button type="button" class="btn btn-primary mr-1" onclick="restartProgram(\'' + programs[i]['name'] + '\');">ReStart</button>';
+                action = '<button type="button" disabled class="btn btn-primary mr-1" onclick="startProgram(\'' + programs[i]['name'] + '\');">启动</button>';
+                action = action + '<button type="button" class="btn btn-primary mr-1" onclick="stopProgram(\'' + programs[i]['name'] + '\');">停止</button>';
+                action = action + '<button type="button" class="btn btn-primary mr-1" onclick="restartProgram(\'' + programs[i]['name'] + '\');">重启</button>';
                 color = "green";
             } else {
-                action = '<button type="button" class="btn btn-primary mr-1" onclick="startProgram(\'' + programs[i]['name'] + '\');">Start</button>';
-                action = action + '<button type="button" disabled class="btn btn-primary mr-1" onclick="stopProgram(\'' + programs[i]['name'] + '\');">Stop</button>';
-                action = action + '<button type="button" disabled class="btn btn-primary mr-1" onclick="restartProgram(\'' + programs[i]['name'] + '\');">ReStart</button>';
+                action = '<button type="button" class="btn btn-primary mr-1" onclick="startProgram(\'' + programs[i]['name'] + '\');">启动</button>';
+                action = action + '<button type="button" disabled class="btn btn-primary mr-1" onclick="stopProgram(\'' + programs[i]['name'] + '\');">停止</button>';
+                action = action + '<button type="button" disabled class="btn btn-primary mr-1" onclick="restartProgram(\'' + programs[i]['name'] + '\');">重启</button>';
                 color = "red";
             }
             let logLabel = '<a href=/log?name=' + programs[i]['name'] + '>日志列表 </a>';
@@ -184,10 +184,10 @@
     }
 
     function shutdown_supervisor() {
-        confirm_dialog( { 'title': "Shutdown confirmation",
-            'message': "Do you really want to shutdown supervisor?",
-            'cancel-text': "Cancel",
-            'confirm-text': "Shutdown",
+        confirm_dialog( { 'title': "关闭确认",
+            'message': "你真的要关闭supervisor吗？",
+            'cancel-text': "取消",
+            'confirm-text': "关闭",
             'confirm-onclick': function() {
                 $.ajax( {
                     type: "PUT",
@@ -206,8 +206,8 @@
     };
 
     function reload_supervisor() {
-        confirm_dialog( { 'title': "Reload confirmation",
-            'message': "Do you really want to reload supervisor?",
+        confirm_dialog( { 'title': "重载的确认",
+            'message': "您真的要重新加载supervisor吗?",
             'cancel-text': "Cancel",
             'confirm-text': "Reload",
             'confirm-onclick': function() {
@@ -240,7 +240,7 @@
     function start_select() {
         programs = get_selected_programs();
         if( programs.length <= 0 ) {
-            alert( "no program selected" );
+            alert( "没有选择程序" );
             return;
         }
         $.ajax( {
@@ -261,7 +261,7 @@
     function stop_select() {
         programs = get_selected_programs();
         if( programs.length <= 0 ) {
-            alert( "no program selected" );
+            alert( "没有选择程序" );
             return;
         }
         $.ajax( {
@@ -304,14 +304,10 @@
 <div class="container">
     <div class='row'>
         <div class="col-12">
-
-            <a href="http://10.234.254.27:9996/graph" class="text-decoration-none mr-3" target="_blank">Prometheus</a>
-            <a href="http://127.0.0.1:3000" class="text-decoration-none" target="_blank">Grafana</a>
-
-            <input type="button" class="btn btn-primary float-right mr-1" value="Shutdown" onclick='shutdown_supervisor();'>
-            <input type="button" class="btn btn-primary float-right mr-1" value="Reload" onclick='reload_supervisor();'>
-            <input type="button" class="btn btn-primary float-right mr-1" value="Stop Select" onclick='stop_select();'>
-            <input type="button" class="btn btn-primary float-right mr-1" value="Start Select" onclick='start_select();'>
+            <input type="button" class="btn btn-primary float-right mr-1" value="关闭" onclick='shutdown_supervisor();'>
+            <input type="button" class="btn btn-primary float-right mr-1" value="重启" onclick='reload_supervisor();'>
+            <input type="button" class="btn btn-primary float-right mr-1" value="停止服务" onclick='stop_select();'>
+            <input type="button" class="btn btn-primary float-right mr-1" value="开启服务" onclick='start_select();'>
         </div>
     </div>
     <div class="table-responsive mt-3">
@@ -320,10 +316,10 @@
                data-click-to-select="true" >
             <thead>
             <th data-field="id" data-checkbox="true"></th>
-            <th data-field="name">Program</th>
-            <th data-field="statename">State</th>
-            <th data-field="description">Description</th>
-            <th data-field="action">Action</th>
+            <th data-field="name">名称</th>
+            <th data-field="statename">状态</th>
+            <th data-field="description">详细</th>
+            <th data-field="action">操作</th>
             </thead>
         </table>
     </div>
@@ -335,14 +331,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="my-modal-title">Confirmation</h4>
+                <h4 class="modal-title" id="my-modal-title">确认</h4>
             </div>
             <div class="modal-body">
-                <p id="my-modal-message">Do you want to save changes you made to document before closing?</p>
+                <p id="my-modal-message">要在结束之前保存对文档所做的更改吗？</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal" id='my-modal-cancel-btn'>Cancel</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" id='my-modal-confirm-btn'>Shutdown</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id='my-modal-cancel-btn'>取消</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id='my-modal-confirm-btn'>关闭</button>
             </div>
         </div>
     </div>
